@@ -1,31 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 
-// دالة تجلب المنتجات من API
+export const dynamic = "force-dynamic";
+
 async function getProducts() {
   try {
     const res = await fetch("https://fakestoreapi.com/products", {
-      next: { revalidate: 10 },
+      cache: "no-store",
     });
-
-    if (!res.ok) throw new Error(`API returned ${res.status}`);
-
+    if (!res.ok) throw new Error("Failed to fetch");
     return await res.json();
-  } catch (error) {
-    console.error("Fetch error:", error);
-    return null; // لو في مشكلة ترجع null
+  } catch (err) {
+    console.error(err);
+    return [];
   }
 }
 
 export default async function ProductsPage() {
   const products = await getProducts();
 
-  if (!products) {
-    return (
-      <div className="p-6 text-center text-red-600">
-        حدث خطأ أثناء تحميل المنتجات. حاول لاحقًا.
-      </div>
-    );
+  if (!products.length) {
+    return <div className="p-6 text-center text-gray-500">No Products </div>;
   }
 
   return (
@@ -42,7 +37,6 @@ export default async function ProductsPage() {
               alt={p.title}
               fill
               className="object-contain"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           </div>
           <h2 className="font-semibold text-lg line-clamp-2 mb-2">{p.title}</h2>
